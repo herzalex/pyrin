@@ -239,8 +239,9 @@ impl GasMeter {
         used.saturating_sub(refund)
     }
 
-    /// Resets the gas meter (for new execution)
-    pub fn reset(&self, new_limit: Gas) {
+    /// Resets the gas meter for a new execution
+    /// Note: This only resets used/refund counters. For a new limit, create a new GasMeter.
+    pub fn reset(&self) {
         self.used.store(0, Ordering::Relaxed);
         self.refund.store(0, Ordering::Relaxed);
     }

@@ -1,7 +1,7 @@
 //! Host functions exposed to WASM contracts
 
 use pyrin_contracts_core::{ContractAddress, ContractError, ContractResult, Gas, Log, LogTopic};
-use pyrin_contracts_storage::{ContractStorage, StorageKey, StorageValue};
+use pyrin_contracts_storage::{ContractStorage, StorageKey, StorageValue, ZERO_VALUE};
 use std::sync::Arc;
 
 /// Maximum log data size
@@ -85,10 +85,10 @@ impl HostFunctions {
             self.storage.mark_warm(&self.address, key);
         }
 
-        let cost = if current == [0u8; 32] && value != [0u8; 32] {
+        let cost = if current == ZERO_VALUE && value != ZERO_VALUE {
             // New storage slot
             self.gas.costs().storage_write_new
-        } else if current != [0u8; 32] && value == [0u8; 32] {
+        } else if current != ZERO_VALUE && value == ZERO_VALUE {
             // Clearing storage slot - add refund
             self.gas.add_refund(self.gas.costs().storage_clear_refund);
             self.gas.costs().storage_write_existing

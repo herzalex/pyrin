@@ -9,6 +9,6 @@ mod state;
 mod code;
 mod account;
 
-pub use state::{StorageKey, StorageValue, ContractStorage};
+pub use state::{StorageKey, StorageValue, ContractStorage, ZERO_VALUE};
 pub use code::{CodeStorage, ContractCode};
 pub use account::{AccountState, AccountStorage};
