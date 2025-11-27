@@ -1,0 +1,28 @@
+[package]
+name = "pyrin-contracts-core"
+description = "Pyrin Smart Contracts - Core Types and Interfaces"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+pyrin-hashes = { workspace = true }
+pyrin-addresses = { workspace = true }
+pyrin-consensus-core = { workspace = true }
+
+borsh = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+hex = { workspace = true }
+sha3 = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[features]
+default = []
+wasm = []

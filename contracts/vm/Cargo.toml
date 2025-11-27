@@ -1,0 +1,31 @@
+[package]
+name = "pyrin-contracts-vm"
+description = "Pyrin Smart Contracts - WASM Virtual Machine"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+pyrin-contracts-core = { version = "0.14.1", path = "../core" }
+pyrin-contracts-storage = { version = "0.14.1", path = "../storage" }
+pyrin-hashes = { workspace = true }
+
+borsh = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+parking_lot = { workspace = true }
+sha3 = { workspace = true }
+
+# WASM Runtime - using wasmi for deterministic execution
+wasmi = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[features]
+default = []
+

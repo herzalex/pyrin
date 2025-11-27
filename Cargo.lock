@@ -2312,6 +2312,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "indexmap-nostd"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e04e2fd2b8188ea827b32ef11de88377086d690286ab35747ef7f9bf3ccb590"
+
+[[package]]
 name = "indoc"
 version = "2.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3961,6 +3967,69 @@ dependencies = [
  "pyrin-utils",
  "rand 0.8.5",
  "tokio",
+]
+
+[[package]]
+name = "pyrin-contracts-core"
+version = "0.14.5"
+dependencies = [
+ "borsh",
+ "hex",
+ "pyrin-addresses",
+ "pyrin-consensus-core",
+ "pyrin-hashes",
+ "serde",
+ "serde_json",
+ "sha3",
+ "thiserror",
+]
+
+[[package]]
+name = "pyrin-contracts-runtime"
+version = "0.14.5"
+dependencies = [
+ "borsh",
+ "parking_lot",
+ "pyrin-consensus-core",
+ "pyrin-contracts-core",
+ "pyrin-contracts-storage",
+ "pyrin-contracts-vm",
+ "pyrin-hashes",
+ "serde",
+ "tempfile",
+ "thiserror",
+]
+
+[[package]]
+name = "pyrin-contracts-storage"
+version = "0.14.5"
+dependencies = [
+ "borsh",
+ "indexmap 2.2.6",
+ "parking_lot",
+ "pyrin-contracts-core",
+ "pyrin-database",
+ "pyrin-hashes",
+ "serde",
+ "sha3",
+ "tempfile",
+ "thiserror",
+]
+
+[[package]]
+name = "pyrin-contracts-vm"
+version = "0.14.5"
+dependencies = [
+ "borsh",
+ "parking_lot",
+ "pyrin-contracts-core",
+ "pyrin-contracts-storage",
+ "pyrin-hashes",
+ "serde",
+ "sha3",
+ "tempfile",
+ "thiserror",
+ "wasmi",
 ]
 
 [[package]]
@@ -6736,6 +6805,46 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.60",
+]
+
+[[package]]
+name = "wasmi"
+version = "0.31.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77a8281d1d660cdf54c76a3efa9ddd0c270cada1383a995db3ccb43d166456c7"
+dependencies = [
+ "smallvec",
+ "spin",
+ "wasmi_arena",
+ "wasmi_core",
+ "wasmparser-nostd",
+]
+
+[[package]]
+name = "wasmi_arena"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "104a7f73be44570cac297b3035d76b169d6599637631cf37a1703326a0727073"
+
+[[package]]
+name = "wasmi_core"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcf1a7db34bff95b85c261002720c00c3a6168256dcb93041d3fa2054d19856a"
+dependencies = [
+ "downcast-rs",
+ "libm",
+ "num-traits",
+ "paste",
+]
+
+[[package]]
+name = "wasmparser-nostd"
+version = "0.100.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5a015fe95f3504a94bb1462c717aae75253e39b9dd6c3fb1062c934535c64aa"
+dependencies = [
+ "indexmap-nostd",
 ]
 
 [[package]]
