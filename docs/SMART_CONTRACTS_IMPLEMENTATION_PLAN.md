@@ -2,34 +2,36 @@
 
 ## Executive Summary
 
-Dieses Dokument beschreibt einen detaillierten Plan zur Implementierung von Smart Contracts in der Pyrin-Blockchain. Die Analyse des bestehenden Codebase zeigt, dass Pyrin bereits über eine solide Grundlage verfügt, die erweitert werden kann, um Smart Contract-Funktionalität zu unterstützen.
+This document describes a detailed plan for implementing Smart Contracts in the Pyrin blockchain. The analysis of the existing codebase shows that Pyrin already has a solid foundation that can be extended to support Smart Contract functionality.
 
-## 1. Analyse der bestehenden Architektur
+The transaction structure already includes a `gas` field and a `payload` field, indicating planned Smart Contract support. The subnetwork system provides a natural extension point for Smart Contracts.
 
-### 1.1 Kernkomponenten
+## 1. Analysis of Existing Architecture
 
-Die Pyrin-Blockchain basiert auf einer Rust-Implementierung mit folgenden Hauptkomponenten:
+### 1.1 Core Components
 
-| Komponente | Pfad | Beschreibung |
-|------------|------|--------------|
-| **Consensus** | `/consensus` | Konsens-Engine mit GHOSTDAG-Protokoll |
-| **TxScript** | `/crypto/txscript` | Bitcoin-ähnliche Skriptsprache |
-| **Core** | `/core` | Grundlegende Datenstrukturen |
-| **Wallet** | `/wallet` | Wallet-Funktionalität |
+The Pyrin blockchain is based on a Rust implementation with the following main components:
+
+| Component | Path | Description |
+|-----------|------|-------------|
+| **Consensus** | `/consensus` | Consensus engine with GHOSTDAG protocol |
+| **TxScript** | `/crypto/txscript` | Bitcoin-like script language |
+| **Core** | `/core` | Basic data structures |
+| **Wallet** | `/wallet` | Wallet functionality |
 | **RPC** | `/rpc` | Remote Procedure Calls |
-| **WASM** | `/wasm` | WebAssembly-Bindings |
+| **WASM** | `/wasm` | WebAssembly bindings |
 
-### 1.2 Aktuelle Script-Engine
+### 1.2 Current Script Engine
 
-Die aktuelle `txscript`-Engine unterstützt:
-- **Stack-basierte Operationen**: OpDup, OpSwap, OpRot, etc.
-- **Kryptografische Operationen**: OpSHA256, OpBlake3, OpCheckSig
-- **Kontrollfluss**: OpIf, OpElse, OpEndIf, OpReturn
-- **Arithmetik**: OpAdd, OpSub, Op1Add, etc.
-- **Vergleiche**: OpEqual, OpLessThan, OpGreaterThan
-- **Zeitbasierte Locks**: OpCheckLockTimeVerify, OpCheckSequenceVerify
+The current `txscript` engine supports:
+- **Stack-based operations**: OpDup, OpSwap, OpRot, etc.
+- **Cryptographic operations**: OpSHA256, OpBlake3, OpCheckSig
+- **Control flow**: OpIf, OpElse, OpEndIf, OpReturn
+- **Arithmetic**: OpAdd, OpSub, Op1Add, etc.
+- **Comparisons**: OpEqual, OpLessThan, OpGreaterThan
+- **Time-based locks**: OpCheckLockTimeVerify, OpCheckSequenceVerify
 
-### 1.3 Transaktionsstruktur
+### 1.3 Transaction Structure
 
 ```rust
 pub struct Transaction {
@@ -38,27 +40,27 @@ pub struct Transaction {
     pub outputs: Vec<TransactionOutput>,
     pub lock_time: u64,
     pub subnetwork_id: SubnetworkId,
-    pub gas: u64,                    // Bereits vorhanden!
-    pub payload: Vec<u8>,            // Kann für Contract-Daten genutzt werden
+    pub gas: u64,                    // Already present!
+    pub payload: Vec<u8>,            // Can be used for contract data
 }
 ```
 
-**Wichtige Beobachtung**: Das `gas`-Feld und `payload`-Feld sind bereits in der Transaktionsstruktur vorhanden, was auf eine geplante Smart Contract-Unterstützung hindeutet.
+**Important observation**: The `gas` field and `payload` field are already present in the transaction structure, indicating planned Smart Contract support.
 
 ### 1.4 Subnetworks
 
-Das Subnetwork-System ermöglicht verschiedene Transaktionstypen:
-- `SUBNETWORK_ID_NATIVE` (0): Standard-Transaktionen
-- `SUBNETWORK_ID_COINBASE` (1): Coinbase-Transaktionen
-- `SUBNETWORK_ID_REGISTRY` (2): Registry für neue Subnetworks
+The subnetwork system enables different transaction types:
+- `SUBNETWORK_ID_NATIVE` (0): Standard transactions
+- `SUBNETWORK_ID_COINBASE` (1): Coinbase transactions
+- `SUBNETWORK_ID_REGISTRY` (2): Registry for new subnetworks
 
-**Dies bietet eine natürliche Erweiterungsmöglichkeit für Smart Contracts.**
+**This provides a natural extension point for Smart Contracts.**
 
 ---
 
-## 2. Empfohlene Smart Contract-Architektur
+## 2. Recommended Smart Contract Architecture
 
-### 2.1 Option A: WASM-basierte Smart Contracts (Empfohlen)
+### 2.1 Option A: WASM-based Smart Contracts (Recommended)
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -81,47 +83,87 @@ Das Subnetwork-System ermöglicht verschiedene Transaktionstypen:
 │  │  ┌───────────────┐  ┌────────────┐  ┌───────────────┐  │ │
 │  │  │   GHOSTDAG    │  │ Transaction│  │   Block       │  │ │
 │  │  │   Protocol    │  │  Validator │  │   Processor   │  │ │
-│  │  └───────────────┘  └────────────┘  └───────────────┘  │ │
+│  │  │  └───────────────┘  └────────────┘  └───────────────┘  │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**Vorteile:**
-- Deterministische Ausführung
-- Sandboxed und sicher
-- Unterstützt mehrere Programmiersprachen (Rust, AssemblyScript, C/C++)
-- Hohe Performance
-- Pyrin hat bereits WASM-Erfahrung (siehe `/wasm` Verzeichnis)
+**Advantages:**
+- Deterministic execution
+- Sandboxed and secure
+- Supports multiple programming languages (Rust, AssemblyScript, C/C++)
+- High performance
+- Pyrin already has WASM experience (see `/wasm` directory)
 
-### 2.2 Option B: Erweiterte TxScript-basierte Contracts
+### 2.2 Option B: Extended TxScript-based Contracts
 
-Erweiterung der bestehenden Script-Engine um zusätzliche Opcodes:
+Extension of the existing script engine with additional opcodes:
 
 ```rust
-// Neue Opcodes für Smart Contracts
-opcode OpContractCreate<0xc0, ...>(self, vm) { ... }
-opcode OpContractCall<0xc1, ...>(self, vm) { ... }
-opcode OpStateRead<0xc2, ...>(self, vm) { ... }
-opcode OpStateWrite<0xc3, ...>(self, vm) { ... }
-opcode OpEmitEvent<0xc4, ...>(self, vm) { ... }
-opcode OpGetBlockInfo<0xc5, ...>(self, vm) { ... }
-opcode OpGetTxInfo<0xc6, ...>(self, vm) { ... }
+// New opcodes for Smart Contracts (using existing macro pattern)
+opcode OpContractCreate<0xc0, u32>(self, vm) {
+    // Deploy new contract code
+    let code = vm.dstack.pop()?;
+    let init_data = vm.dstack.pop()?;
+    let address = deploy_contract(code, init_data)?;
+    vm.dstack.push(address.to_vec());
+    Ok(())
+}
+
+opcode OpContractCall<0xc1, u8>(self, vm) {
+    // Call existing contract
+    let address = vm.dstack.pop()?;
+    let data = vm.dstack.pop()?;
+    let gas = vm.dstack.pop_item::<u64>()?;
+    let result = call_contract(address, data, gas)?;
+    vm.dstack.push(result);
+    Ok(())
+}
+
+opcode OpStateRead<0xc2, 1>(self, vm) {
+    let key = vm.dstack.pop()?;
+    let value = read_state(key)?;
+    vm.dstack.push(value);
+    Ok(())
+}
+
+opcode OpStateWrite<0xc3, 1>(self, vm) {
+    let key = vm.dstack.pop()?;
+    let value = vm.dstack.pop()?;
+    write_state(key, value)?;
+    Ok(())
+}
+
+opcode OpEmitEvent<0xc4, 1>(self, vm) {
+    let topics_count = vm.dstack.pop_item::<i32>()?;
+    let topics: Vec<_> = (0..topics_count).map(|_| vm.dstack.pop()).collect::<Result<_,_>>()?;
+    let data = vm.dstack.pop()?;
+    emit_event(topics, data)?;
+    Ok(())
+}
+
+opcode OpGetBlockInfo<0xc5, 1>(self, vm) {
+    let info_type = vm.dstack.pop_item::<u8>()?;
+    let info = get_block_info(info_type)?;
+    vm.dstack.push(info);
+    Ok(())
+}
 ```
 
-**Vorteile:**
-- Einfachere Integration
-- Geringerer Implementierungsaufwand
-- Bitcoin Script-Kompatibilität bleibt erhalten
+**Advantages:**
+- Simpler integration with existing code
+- Lower implementation effort
+- Bitcoin Script compatibility remains intact
 
 ---
 
-## 3. Detaillierter Implementierungsplan
+## 3. Detailed Implementation Plan
 
-### Phase 1: Grundlagen (2-3 Monate)
+### Phase 1: Foundations (2-3 Months)
 
 #### 3.1.1 Contract Storage Layer
 
-**Neue Crate: `/contracts/storage`**
+**New Crate: `/contracts/storage`**
 
 ```rust
 // contracts/storage/src/lib.rs
@@ -147,13 +189,13 @@ impl ContractStorage {
 
 #### 3.1.2 Contract Subnetwork
 
-**Erweiterung: `/consensus/core/src/subnets.rs`**
+**Extension: `/consensus/core/src/subnets.rs`**
 
 ```rust
-// Neue Subnetwork ID für Contracts
+// New Subnetwork ID for Contracts
 pub const SUBNETWORK_ID_CONTRACT: SubnetworkId = SubnetworkId::from_byte(3);
 
-// Contract-Payload-Struktur
+// Contract Payload Structure
 #[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize)]
 pub enum ContractPayload {
     Deploy {
@@ -170,7 +212,7 @@ pub enum ContractPayload {
 
 #### 3.1.3 Gas Metering
 
-**Neue Crate: `/contracts/gas`**
+**New Crate: `/contracts/gas`**
 
 ```rust
 pub struct GasMeter {
@@ -197,11 +239,11 @@ pub const GAS_COSTS: GasCostTable = GasCostTable {
 };
 ```
 
-### Phase 2: WASM VM Integration (2-3 Monate)
+### Phase 2: WASM VM Integration (2-3 Months)
 
 #### 3.2.1 WASM Runtime
 
-**Neue Crate: `/contracts/vm`**
+**New Crate: `/contracts/vm`**
 
 ```rust
 use wasmer::{Store, Module, Instance, Memory};
@@ -223,7 +265,7 @@ impl ContractVM {
     ) -> Result<Vec<u8>, ContractError>;
 }
 
-// Host-Funktionen für Contracts
+// Host functions for contracts
 pub struct HostFunctions {
     pub fn storage_read(key: [u8; 32]) -> [u8; 32];
     pub fn storage_write(key: [u8; 32], value: [u8; 32]);
@@ -239,7 +281,7 @@ pub struct HostFunctions {
 #### 3.2.2 Contract Interface Standard (PRC-20 / PRC-721)
 
 ```rust
-// Token-Interface (ähnlich ERC-20)
+// Token Interface (similar to ERC-20)
 pub trait PRC20 {
     fn name(&self) -> String;
     fn symbol(&self) -> String;
@@ -252,14 +294,14 @@ pub trait PRC20 {
 }
 ```
 
-### Phase 3: Konsensus-Integration (2-3 Monate)
+### Phase 3: Consensus Integration (2-3 Months)
 
-#### 3.3.1 Transaction Validator Erweiterung
+#### 3.3.1 Transaction Validator Extension
 
-**Erweiterung: `/consensus/src/processes/transaction_validator`**
+**Extension: `/consensus/src/processes/transaction_validator`**
 
 ```rust
-// Neue Datei: contract_validator.rs
+// New file: contract_validator.rs
 pub struct ContractValidator {
     vm: ContractVM,
     storage: ContractStorage,
@@ -292,10 +334,10 @@ impl ContractValidator {
 }
 ```
 
-#### 3.3.2 Block Processor Erweiterung
+#### 3.3.2 Block Processor Extension
 
 ```rust
-// Erweiterung der Block-Verarbeitung
+// Extension of block processing
 impl BlockProcessor {
     pub fn process_contract_transactions(
         &mut self,
@@ -318,12 +360,12 @@ impl BlockProcessor {
 }
 ```
 
-### Phase 4: RPC & SDK (1-2 Monate)
+### Phase 4: RPC & SDK (1-2 Months)
 
-#### 3.4.1 Neue RPC-Methoden
+#### 3.4.1 New RPC Methods
 
 ```rust
-// Neue RPC-Endpunkte
+// New RPC endpoints
 pub trait ContractRpc {
     async fn deploy_contract(&self, code: Vec<u8>, init_data: Vec<u8>) -> DeployResult;
     async fn call_contract(&self, address: String, function: String, args: Vec<u8>) -> CallResult;
@@ -334,10 +376,10 @@ pub trait ContractRpc {
 }
 ```
 
-#### 3.4.2 WASM SDK Erweiterung
+#### 3.4.2 WASM SDK Extension
 
 ```typescript
-// TypeScript SDK für Contracts
+// TypeScript SDK for Contracts
 interface ContractSDK {
     deployContract(code: Uint8Array, initData: Uint8Array): Promise<DeployResult>;
     callContract(address: string, abi: ABI, method: string, args: any[]): Promise<any>;
@@ -350,42 +392,42 @@ interface ContractSDK {
 
 ---
 
-## 4. Dateisystem-Struktur
+## 4. File System Structure
 
 ```
 pyrin/
-├── contracts/                      # Neue Contract-Module
-│   ├── core/                       # Core Contract-Typen
+├── contracts/                      # New Contract Modules
+│   ├── core/                       # Core Contract Types
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       ├── address.rs          # Contract-Adressen
-│   │       ├── types.rs            # Contract-Typen
-│   │       └── abi.rs              # ABI-Definitionen
+│   │       ├── address.rs          # Contract Addresses
+│   │       ├── types.rs            # Contract Types
+│   │       └── abi.rs              # ABI Definitions
 │   │
-│   ├── storage/                    # Contract-Speicher
+│   ├── storage/                    # Contract Storage
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       ├── state.rs            # State-Management
+│   │       ├── state.rs            # State Management
 │   │       └── trie.rs             # Merkle-Patricia-Trie
 │   │
 │   ├── vm/                         # WASM Virtual Machine
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       ├── executor.rs         # Contract-Ausführung
-│   │       ├── host.rs             # Host-Funktionen
-│   │       └── gas.rs              # Gas-Metering
+│   │       ├── executor.rs         # Contract Execution
+│   │       ├── host.rs             # Host Functions
+│   │       └── gas.rs              # Gas Metering
 │   │
-│   ├── runtime/                    # Contract-Runtime
+│   ├── runtime/                    # Contract Runtime
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       ├── context.rs          # Execution-Context
-│   │       └── events.rs           # Event-System
+│   │       ├── context.rs          # Execution Context
+│   │       └── events.rs           # Event System
 │   │
-│   └── std/                        # Standard-Library für Contracts
+│   └── std/                        # Standard Library for Contracts
 │       ├── Cargo.toml
 │       └── src/
 │           ├── lib.rs
@@ -413,9 +455,9 @@ pyrin/
 
 ---
 
-## 5. Abhängigkeiten
+## 5. Dependencies
 
-### Neue Cargo-Dependencies
+### New Cargo Dependencies
 
 ```toml
 # contracts/vm/Cargo.toml
@@ -430,14 +472,14 @@ rlp = "0.5"                         # RLP Encoding
 
 # contracts/core/Cargo.toml
 [dependencies]
-sha3 = "0.10"                       # Keccak für Adressen
+sha3 = "0.10"                       # Keccak for addresses
 ```
 
 ---
 
-## 6. Sicherheitsüberlegungen
+## 6. Security Considerations
 
-### 6.1 Reentrancy-Schutz
+### 6.1 Reentrancy Protection
 ```rust
 pub struct ReentrancyGuard {
     locked: RefCell<HashSet<ContractAddress>>,
@@ -449,21 +491,21 @@ impl ReentrancyGuard {
 }
 ```
 
-### 6.2 Gas-Limits
-- Minimum Gas: 21.000 (wie Ethereum)
-- Maximum Gas pro Block: Konfigurierbar
-- Gas-Rückerstattung bei unbenutztem Gas
+### 6.2 Gas Limits
+- Minimum Gas: 21,000 (like Ethereum)
+- Maximum Gas per Block: Configurable
+- Gas refund for unused gas
 
-### 6.3 Code-Validierung
+### 6.3 Code Validation
 ```rust
 pub fn validate_contract_code(code: &[u8]) -> Result<(), ValidationError> {
-    // 1. WASM Modul validieren
+    // 1. Validate WASM module
     wasmparser::validate(code)?;
     
-    // 2. Prüfen auf verbotene Imports
+    // 2. Check for forbidden imports
     check_forbidden_imports(code)?;
     
-    // 3. Code-Größe prüfen
+    // 3. Check code size
     if code.len() > MAX_CONTRACT_SIZE {
         return Err(ValidationError::CodeTooLarge);
     }
@@ -474,72 +516,72 @@ pub fn validate_contract_code(code: &[u8]) -> Result<(), ValidationError> {
 
 ---
 
-## 7. Migrations-Strategie
+## 7. Migration Strategy
 
-### 7.1 Testnet-Deployment
-1. Smart Contract-Feature auf Testnet aktivieren
-2. Community-Testing durchführen
-3. Bug-Fixes und Optimierungen
+### 7.1 Testnet Deployment
+1. Activate Smart Contract feature on testnet
+2. Conduct community testing
+3. Bug fixes and optimizations
 
-### 7.2 Mainnet-Aktivierung
-1. Hard-Fork zu einem bestimmten Block/DAA-Score
-2. Aktivierung des `SUBNETWORK_ID_CONTRACT`
-3. Graduelle Gas-Limit-Erhöhung
+### 7.2 Mainnet Activation
+1. Hard-fork at a specific block/DAA score
+2. Activation of `SUBNETWORK_ID_CONTRACT`
+3. Gradual gas limit increase
 
-### 7.3 Rückwärtskompatibilität
-- Bestehende Transaktionen bleiben unverändert
-- Smart Contracts sind ein Add-on, kein Ersatz
-
----
-
-## 8. Zeitplan
-
-| Phase | Beschreibung | Dauer | Abhängigkeiten |
-|-------|-------------|-------|----------------|
-| 1.1 | Contract Storage Layer | 4 Wochen | - |
-| 1.2 | Contract Subnetwork | 2 Wochen | 1.1 |
-| 1.3 | Gas Metering | 2 Wochen | - |
-| 2.1 | WASM VM Integration | 6 Wochen | 1.1, 1.3 |
-| 2.2 | Interface Standards | 2 Wochen | 2.1 |
-| 3.1 | Transaction Validator | 4 Wochen | 2.1 |
-| 3.2 | Block Processor | 4 Wochen | 3.1 |
-| 4.1 | RPC Erweiterungen | 3 Wochen | 3.2 |
-| 4.2 | SDK Updates | 3 Wochen | 4.1 |
-| 5 | Testing & Audit | 8 Wochen | Alle |
-
-**Gesamtdauer: ~8-12 Monate**
+### 7.3 Backward Compatibility
+- Existing transactions remain unchanged
+- Smart Contracts are an add-on, not a replacement
 
 ---
 
-## 9. Alternative Ansätze
+## 8. Timeline
 
-### 9.1 Move VM (von Sui/Aptos)
-- Vorteile: Formale Verifikation, sicher
-- Nachteile: Neue Sprache, weniger Entwickler
+| Phase | Description | Duration | Dependencies |
+|-------|-------------|----------|--------------|
+| 1.1 | Contract Storage Layer | 4 weeks | - |
+| 1.2 | Contract Subnetwork | 2 weeks | 1.1 |
+| 1.3 | Gas Metering | 2 weeks | - |
+| 2.1 | WASM VM Integration | 6 weeks | 1.1, 1.3 |
+| 2.2 | Interface Standards | 2 weeks | 2.1 |
+| 3.1 | Transaction Validator | 4 weeks | 2.1 |
+| 3.2 | Block Processor | 4 weeks | 3.1 |
+| 4.1 | RPC Extensions | 3 weeks | 3.2 |
+| 4.2 | SDK Updates | 3 weeks | 4.1 |
+| 5 | Testing & Audit | 8 weeks | All |
 
-### 9.2 EVM-Kompatibilität
-- Vorteile: Bestehende Tools, große Entwickler-Community
-- Nachteile: Komplexer, Legacy-Probleme
-
-### 9.3 Cairo (von Starknet)
-- Vorteile: ZK-Proof-freundlich
-- Nachteile: Noch sehr neu, begrenzte Tooling
-
----
-
-## 10. Nächste Schritte
-
-1. **Sofort**: Technische Diskussion im Team
-2. **Woche 1-2**: Proof-of-Concept für Storage Layer
-3. **Woche 3-4**: WASM VM Evaluation (wasmer vs. wasmtime)
-4. **Monat 2**: Erste Integration Tests
-5. **Monat 3**: Community-Feedback einholen
+**Total Duration: ~8-12 months**
 
 ---
 
-## Anhang A: Code-Beispiele
+## 9. Alternative Approaches
 
-### A.1 Einfacher Token-Contract (Rust/WASM)
+### 9.1 Move VM (from Sui/Aptos)
+- Advantages: Formal verification, secure
+- Disadvantages: New language, fewer developers
+
+### 9.2 EVM Compatibility
+- Advantages: Existing tools, large developer community
+- Disadvantages: More complex, legacy issues
+
+### 9.3 Cairo (from Starknet)
+- Advantages: ZK-proof friendly
+- Disadvantages: Very new, limited tooling
+
+---
+
+## 10. Next Steps
+
+1. **Immediately**: Technical discussion in the team
+2. **Week 1-2**: Proof-of-concept for Storage Layer
+3. **Week 3-4**: WASM VM evaluation (wasmer vs. wasmtime)
+4. **Month 2**: First integration tests
+5. **Month 3**: Gather community feedback
+
+---
+
+## Appendix A: Code Examples
+
+### A.1 Simple Token Contract (Rust/WASM)
 
 ```rust
 #![no_std]
@@ -585,18 +627,18 @@ impl Token {
 }
 ```
 
-### A.2 Contract-Deployment via CLI
+### A.2 Contract Deployment via CLI
 
 ```bash
-# Contract kompilieren
+# Compile contract
 cargo build --target wasm32-unknown-unknown --release
 
-# Contract deployen
+# Deploy contract
 pyrin-cli contract deploy \
     --code target/wasm32-unknown-unknown/release/token.wasm \
     --init-data '{"name":"MyToken","symbol":"MTK","initial_supply":1000000}'
 
-# Contract aufrufen
+# Call contract
 pyrin-cli contract call \
     --address pyrin:qp... \
     --function transfer \
@@ -605,7 +647,7 @@ pyrin-cli contract call \
 
 ---
 
-## Anhang B: Referenzen
+## Appendix B: References
 
 1. [Wasmer Documentation](https://docs.wasmer.io/)
 2. [Ethereum Yellow Paper](https://ethereum.github.io/yellowpaper/paper.pdf)
@@ -615,5 +657,5 @@ pyrin-cli contract call \
 
 ---
 
-*Dokument erstellt: November 2024*
+*Document created: November 2024*
 *Version: 1.0*
