@@ -148,8 +148,10 @@ impl InputValidator {
     }
 
     /// Validates a value transfer amount
+    /// Returns an error if the value (required) exceeds the balance (available)
     pub fn validate_value(value: u64, balance: u64) -> ContractResult<()> {
         if value > balance {
+            // value = required amount, balance = available amount
             return Err(ContractError::insufficient_balance(value, balance));
         }
         Ok(())
