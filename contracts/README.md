@@ -24,6 +24,9 @@ Core types and definitions for smart contracts:
 - **GasMeter** - Gas tracking with EIP-3529 refund support
 - **ContractError** - Comprehensive error types
 - **ContractPayload** - Deploy/Call transaction payloads
+- **ReentrancyGuard** - Protection against reentrancy attacks
+- **InputValidator** - Input validation utilities
+- **RateLimiter** - Block-level rate limiting
 
 ### pyrin-contracts-storage
 
@@ -113,13 +116,91 @@ Contract transactions include:
 - `gas` field for gas limit
 - `payload` field for contract data
 
-## Security Considerations
+## Security Features
 
-- Maximum call depth: 1024
-- Maximum memory: 16MB (256 pages × 64KB)
-- Maximum code size: 24KB
-- Reentrancy protection via static call tracking
-- Gas metering prevents infinite loops
+### Reentrancy Protection
+
+The runtime implements a reentrancy guard that prevents contracts from being re-entered while still executing. This protects against the famous DAO-style attack:
+
+```rust
+use pyrin_contracts_core::ReentrancyGuard;
+
+let guard = ReentrancyGuard::new();
+let _lock = guard.acquire(&contract_address)?; // Returns error if already locked
+// Contract execution...
+// Lock is automatically released when dropped
+```
+
+### Input Validation
+
+All inputs are validated for size and format:
+
+- Maximum input data size: 64KB
+- Maximum return data size: 64KB  
+- Maximum log topics: 4
+- Maximum log data size: 16KB
+
+### Rate Limiting
+
+Block-level rate limiting prevents DoS attacks:
+
+```rust
+use pyrin_contracts_core::RateLimiter;
+
+let limiter = RateLimiter::new(10_000); // Max 10K ops per block
+limiter.try_consume()?; // Returns error when limit reached
+limiter.reset(); // Reset at block boundary
+```
+
+### Resource Limits
+
+| Resource | Limit |
+|----------|-------|
+| Maximum call depth | 1024 |
+| Maximum memory | 16MB (256 pages × 64KB) |
+| Maximum code size | 24KB |
+| Block gas limit | 30,000,000 |
+| Transaction gas limit | 10,000,000 |
+
+## RPC API
+
+New RPC operations for smart contracts:
+
+| Operation | Description |
+|-----------|-------------|
+| `DeployContract` | Deploy new contract from WASM bytecode |
+| `CallContract` | Execute contract function (state-changing) |
+| `EstimateContractGas` | Estimate gas for a call |
+| `GetContractCode` | Retrieve contract bytecode |
+| `GetContractStorage` | Read storage slot value |
+| `GetContractLogs` | Query contract event logs |
+
+## CLI Commands
+
+The `contract` command provides CLI access:
+
+```bash
+# Deploy a contract
+pyrin-cli contract deploy mycontract.wasm --init-data 0x1234 --gas 1000000
+
+# Call a contract (state-changing)
+pyrin-cli contract call 0x... 0x1234 --gas 100000 --value 1000
+
+# View (read-only call)
+pyrin-cli contract view 0x... 0x1234
+
+# Get contract bytecode
+pyrin-cli contract code 0x...
+
+# Read storage slot
+pyrin-cli contract storage 0x... 0x0000...0001
+
+# Query event logs
+pyrin-cli contract logs --address 0x... --from 100 --to 200
+
+# Estimate gas
+pyrin-cli contract estimate 0x... 0x1234
+```
 
 ## License
 

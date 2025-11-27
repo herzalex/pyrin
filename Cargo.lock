@@ -3975,6 +3975,7 @@ version = "0.14.5"
 dependencies = [
  "borsh",
  "hex",
+ "parking_lot",
  "pyrin-addresses",
  "pyrin-consensus-core",
  "pyrin-hashes",

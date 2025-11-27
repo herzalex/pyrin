@@ -1,6 +1,6 @@
 //! Main contract runtime
 
-use pyrin_contracts_core::{ContractAddress, ContractError, ContractResult, Gas};
+use pyrin_contracts_core::{ContractAddress, ContractError, ContractResult, Gas, ReentrancyGuard, InputValidator};
 use pyrin_contracts_storage::{AccountStorage, CodeStorage, ContractStorage};
 use pyrin_contracts_vm::{ContractExecutor, ExecutionContext, ExecutionResult};
 use std::sync::Arc;
@@ -50,6 +50,8 @@ pub struct ContractRuntime {
     executor: ContractExecutor,
     /// Current block gas used
     block_gas_used: RwLock<Gas>,
+    /// Reentrancy guard for security
+    reentrancy_guard: ReentrancyGuard,
 }
 
 impl ContractRuntime {
@@ -72,6 +74,7 @@ impl ContractRuntime {
             accounts,
             executor,
             block_gas_used: RwLock::new(0),
+            reentrancy_guard: ReentrancyGuard::new(),
         }
     }
 
@@ -157,6 +160,9 @@ impl ContractRuntime {
             return Err(ContractError::Revert("contract calls disabled".to_string()));
         }
 
+        // Validate input data size
+        InputValidator::validate_input_size(&data)?;
+
         // Check gas limit
         let gas_limit = gas_limit.min(self.config.tx_gas_limit);
 
@@ -167,6 +173,10 @@ impl ContractRuntime {
                 return Err(ContractError::out_of_gas(block_used + gas_limit, self.config.block_gas_limit));
             }
         }
+
+        // Acquire reentrancy lock - this prevents the same contract from being called
+        // while it's already executing
+        let _lock = self.reentrancy_guard.acquire(&to)?;
 
         // Create execution context
         let ctx = ExecutionContext::new(

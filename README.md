@@ -327,6 +327,66 @@ Mining is currently supported only on testnet, so once you've setup a test node,
 </details>
 
 
+## Smart Contracts (Experimental)
+
+Pyrin now includes experimental smart contract infrastructure for WASM-based smart contracts.
+
+<details>
+
+<summary>Smart Contract Architecture</summary>
+
+The smart contract system consists of four core crates:
+
+- **pyrin-contracts-core** - Core types (addresses, ABI, gas metering, error types)
+- **pyrin-contracts-storage** - State, code, and account storage
+- **pyrin-contracts-vm** - WASM virtual machine using wasmi runtime
+- **pyrin-contracts-runtime** - Block runtime, transaction processing, events
+
+### Security Features
+
+- **Reentrancy Protection** - Prevents reentrancy attacks
+- **Gas Metering** - EIP-3529 compatible gas tracking with refunds
+- **Input Validation** - Size limits and validation for all inputs
+- **Rate Limiting** - Block-level operation limits
+
+### Using Smart Contracts via CLI
+
+```bash
+# Deploy a contract
+contract deploy mycontract.wasm --gas 1000000
+
+# Call a contract function
+contract call <address> <calldata> --gas 100000 --value 1000
+
+# View (read-only call)
+contract view <address> <calldata>
+
+# Get contract code
+contract code <address>
+
+# Read storage
+contract storage <address> <key>
+
+# Query event logs
+contract logs --address <address> --from-block 100 --to-block 200
+```
+
+### Gas Costs
+
+| Operation | Cost |
+|-----------|------|
+| Storage Read | 200 |
+| Storage Write (cold) | 20,000 |
+| Storage Write (warm) | 100 |
+| Contract Call | 700 |
+| Log Event | 375 + 375/topic + 8/byte |
+| SHA3 | 30 + 6/word |
+
+For more details, see [contracts/README.md](contracts/README.md).
+
+</details>
+
+
 ## Benchmarking & Testing
 
 
