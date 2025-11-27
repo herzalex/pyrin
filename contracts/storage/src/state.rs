@@ -1,11 +1,9 @@
 //! Contract state storage implementation
 
 use pyrin_contracts_core::ContractAddress;
-use borsh::{BorshDeserialize, BorshSerialize};
 use indexmap::IndexMap;
 use parking_lot::RwLock;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 /// Storage key (32 bytes)
 pub type StorageKey = [u8; 32];

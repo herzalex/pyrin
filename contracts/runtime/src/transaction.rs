@@ -4,7 +4,6 @@ use pyrin_contracts_core::{
     ContractAddress, ContractCall, ContractDeploy, ContractError, 
     ContractPayload, ContractReceipt, ContractResult, Gas,
 };
-use pyrin_consensus_core::tx::Transaction;
 use pyrin_hashes::Hash;
 use crate::runtime::{BlockInfo, ContractRuntime};
 

@@ -1,6 +1,6 @@
 //! Main contract runtime
 
-use pyrin_contracts_core::{ContractAddress, ContractError, ContractResult, Gas, GasMeter};
+use pyrin_contracts_core::{ContractAddress, ContractError, ContractResult, Gas};
 use pyrin_contracts_storage::{AccountStorage, CodeStorage, ContractStorage};
 use pyrin_contracts_vm::{ContractExecutor, ExecutionContext, ExecutionResult};
 use std::sync::Arc;

@@ -9,6 +9,7 @@ use parking_lot::RwLock;
 pub const MAX_CALL_DEPTH: u32 = 1024;
 
 /// Maximum memory pages (64KB each) a contract can use
+#[allow(dead_code)]
 pub const MAX_MEMORY_PAGES: u32 = 256; // 16MB
 
 /// Execution context passed to contracts
@@ -265,14 +266,14 @@ impl ContractExecutor {
     fn register_host_functions<T>(&self, linker: &mut wasmi::Linker<T>) -> ContractResult<()> {
         // Storage functions
         linker
-            .func_wrap("env", "storage_read", |_caller: wasmi::Caller<T>, key_ptr: i32, value_ptr: i32| -> i32 {
+            .func_wrap("env", "storage_read", |_caller: wasmi::Caller<T>, _key_ptr: i32, _value_ptr: i32| -> i32 {
                 // Implementation would read from storage
                 0
             })
             .map_err(|e| ContractError::WasmError(e.to_string()))?;
 
         linker
-            .func_wrap("env", "storage_write", |_caller: wasmi::Caller<T>, key_ptr: i32, value_ptr: i32| -> i32 {
+            .func_wrap("env", "storage_write", |_caller: wasmi::Caller<T>, _key_ptr: i32, _value_ptr: i32| -> i32 {
                 // Implementation would write to storage
                 0
             })
@@ -280,7 +281,7 @@ impl ContractExecutor {
 
         // Caller/value functions
         linker
-            .func_wrap("env", "get_caller", |_caller: wasmi::Caller<T>, ptr: i32| -> i32 {
+            .func_wrap("env", "get_caller", |_caller: wasmi::Caller<T>, _ptr: i32| -> i32 {
                 // Implementation would return caller address
                 0
             })
@@ -308,7 +309,7 @@ impl ContractExecutor {
 
         // Logging
         linker
-            .func_wrap("env", "log", |_caller: wasmi::Caller<T>, data_ptr: i32, data_len: i32, topics_ptr: i32, topics_count: i32| -> i32 {
+            .func_wrap("env", "log", |_caller: wasmi::Caller<T>, _data_ptr: i32, _data_len: i32, _topics_ptr: i32, _topics_count: i32| -> i32 {
                 // Implementation would emit a log
                 0
             })
@@ -316,7 +317,7 @@ impl ContractExecutor {
 
         // Contract calls
         linker
-            .func_wrap("env", "call", |_caller: wasmi::Caller<T>, addr_ptr: i32, value: i64, data_ptr: i32, data_len: i32, gas: i64| -> i32 {
+            .func_wrap("env", "call", |_caller: wasmi::Caller<T>, _addr_ptr: i32, _value: i64, _data_ptr: i32, _data_len: i32, _gas: i64| -> i32 {
                 // Implementation would call another contract
                 0
             })
@@ -324,7 +325,7 @@ impl ContractExecutor {
 
         // Revert
         linker
-            .func_wrap("env", "revert", |_caller: wasmi::Caller<T>, data_ptr: i32, data_len: i32| {
+            .func_wrap("env", "revert", |_caller: wasmi::Caller<T>, _data_ptr: i32, _data_len: i32| {
                 // Implementation would trigger a revert
             })
             .map_err(|e| ContractError::WasmError(e.to_string()))?;
