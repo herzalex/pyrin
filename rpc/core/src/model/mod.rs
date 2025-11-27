@@ -1,6 +1,7 @@
 pub mod address;
 pub mod block;
 pub mod blue_work;
+pub mod contract;
 pub mod hash;
 pub mod header;
 pub mod hex_cnv;
@@ -15,6 +16,7 @@ pub mod tx;
 pub use address::*;
 pub use block::*;
 pub use blue_work::*;
+pub use contract::*;
 pub use hash::*;
 pub use header::*;
 pub use hex_cnv::*;

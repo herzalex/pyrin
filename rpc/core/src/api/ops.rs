@@ -87,6 +87,20 @@ pub enum RpcApiOps {
     /// Get DAA Score timestamp estimate
     GetDaaScoreTimestampEstimate,
 
+    // Smart Contract operations
+    /// Deploy a new smart contract
+    DeployContract,
+    /// Call a smart contract
+    CallContract,
+    /// Estimate gas for a contract operation
+    EstimateContractGas,
+    /// Get contract bytecode
+    GetContractCode,
+    /// Get contract storage value
+    GetContractStorage,
+    /// Get contract logs
+    GetContractLogs,
+
     // Subscription commands for starting/stopping notifications
     NotifyBlockAdded,
     NotifyNewBlockTemplate,
