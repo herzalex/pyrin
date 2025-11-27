@@ -83,7 +83,7 @@ The subnetwork system enables different transaction types:
 │  │  ┌───────────────┐  ┌────────────┐  ┌───────────────┐  │ │
 │  │  │   GHOSTDAG    │  │ Transaction│  │   Block       │  │ │
 │  │  │   Protocol    │  │  Validator │  │   Processor   │  │ │
-│  │  │  └───────────────┘  └────────────┘  └───────────────┘  │ │
+│  │  └───────────────┘  └────────────┘  └───────────────┘  │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -99,8 +99,11 @@ The subnetwork system enables different transaction types:
 
 Extension of the existing script engine with additional opcodes:
 
+> **Note**: The opcodes 0xc0-0xc5 shown below currently map to OpUnknown192-OpUnknown197 in the existing codebase. These would need to be repurposed via a hard-fork. Alternative: use opcodes in the 0xf0-0xf9 range which are also currently undefined.
+
 ```rust
 // New opcodes for Smart Contracts (using existing macro pattern)
+// These would replace the current OpUnknown opcodes at these positions
 opcode OpContractCreate<0xc0, u32>(self, vm) {
     // Deploy new contract code
     let code = vm.dstack.pop()?;
@@ -191,9 +194,17 @@ impl ContractStorage {
 
 **Extension: `/consensus/core/src/subnets.rs`**
 
+> **Note**: The current SubnetworkId validation in `subnets.rs` only allows bytes 0 and 1. Adding SUBNETWORK_ID_CONTRACT (byte 3) requires updating the `TryFrom` and `FromStr` implementations to accept this new value. This change would be part of the hard-fork activation.
+
 ```rust
 // New Subnetwork ID for Contracts
 pub const SUBNETWORK_ID_CONTRACT: SubnetworkId = SubnetworkId::from_byte(3);
+
+// Update validation to include the new subnetwork:
+// In TryFrom<&[u8]> and FromStr implementations:
+// if bytes != Self::from_byte(0).0 && bytes != Self::from_byte(1).0 && bytes != Self::from_byte(3).0 {
+//     Err(Self::Error::InvalidBytes)
+// }
 
 // Contract Payload Structure
 #[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize)]
@@ -225,7 +236,7 @@ impl GasMeter {
     pub fn remaining(&self) -> u64;
 }
 
-// Gas-Kosten-Tabelle
+// Gas cost table
 pub const GAS_COSTS: GasCostTable = GasCostTable {
     storage_read: 200,
     storage_write: 5000,
@@ -431,8 +442,8 @@ pyrin/
 │       ├── Cargo.toml
 │       └── src/
 │           ├── lib.rs
-│           ├── storage.rs          # Storage-Makros
-│           ├── tokens.rs           # Token-Interfaces
+│           ├── storage.rs          # Storage macros
+│           ├── tokens.rs           # Token interfaces
 │           └── prelude.rs          # Common Imports
 │
 ├── consensus/
