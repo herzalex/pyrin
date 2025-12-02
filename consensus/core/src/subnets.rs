@@ -74,6 +74,12 @@ impl SubnetworkId {
     pub fn is_builtin_or_native(&self) -> bool {
         *self == SUBNETWORK_ID_NATIVE || self.is_builtin()
     }
+
+    /// Returns true if this is the smart contract subnetwork
+    #[inline]
+    pub fn is_contract(&self) -> bool {
+        *self == SUBNETWORK_ID_CONTRACT
+    }
 }
 
 #[derive(Error, Debug, Clone)]
@@ -93,7 +99,12 @@ impl TryFrom<&[u8]> for SubnetworkId {
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         let bytes = <[u8; SUBNETWORK_ID_SIZE]>::try_from(value)?;
-        if bytes != Self::from_byte(0).0 && bytes != Self::from_byte(1).0 {
+        // Allow native (0), coinbase (1), registry (2), and contract (3) subnetworks
+        if bytes != Self::from_byte(0).0 
+            && bytes != Self::from_byte(1).0 
+            && bytes != Self::from_byte(2).0
+            && bytes != Self::from_byte(3).0 
+        {
             Err(Self::Error::InvalidBytes)
         } else {
             Ok(Self(bytes))
@@ -125,7 +136,12 @@ impl FromStr for SubnetworkId {
     fn from_str(hex_str: &str) -> Result<Self, Self::Err> {
         let mut bytes = [0u8; SUBNETWORK_ID_SIZE];
         faster_hex::hex_decode(hex_str.as_bytes(), &mut bytes)?;
-        if bytes != Self::from_byte(0).0 && bytes != Self::from_byte(1).0 {
+        // Allow native (0), coinbase (1), registry (2), and contract (3) subnetworks
+        if bytes != Self::from_byte(0).0 
+            && bytes != Self::from_byte(1).0 
+            && bytes != Self::from_byte(2).0
+            && bytes != Self::from_byte(3).0 
+        {
             Err(Self::Err::InvalidBytes)
         } else {
             Ok(Self(bytes))
@@ -138,7 +154,12 @@ impl FromHex for SubnetworkId {
     fn from_hex(hex_str: &str) -> Result<Self, Self::Error> {
         let mut bytes = [0u8; SUBNETWORK_ID_SIZE];
         faster_hex::hex_decode(hex_str.as_bytes(), &mut bytes)?;
-        if bytes != Self::from_byte(0).0 && bytes != Self::from_byte(1).0 {
+        // Allow native (0), coinbase (1), registry (2), and contract (3) subnetworks
+        if bytes != Self::from_byte(0).0 
+            && bytes != Self::from_byte(1).0 
+            && bytes != Self::from_byte(2).0
+            && bytes != Self::from_byte(3).0 
+        {
             Err(Self::Error::InvalidBytes)
         } else {
             Ok(Self(bytes))
@@ -154,3 +175,6 @@ pub const SUBNETWORK_ID_COINBASE: SubnetworkId = SubnetworkId::from_byte(1);
 
 /// The subnetwork ID which is used for adding new sub networks to the registry
 pub const SUBNETWORK_ID_REGISTRY: SubnetworkId = SubnetworkId::from_byte(2);
+
+/// The subnetwork ID which is used for smart contract transactions
+pub const SUBNETWORK_ID_CONTRACT: SubnetworkId = SubnetworkId::from_byte(3);

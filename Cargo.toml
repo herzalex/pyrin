@@ -59,6 +59,11 @@ members = [
     "metrics/perf_monitor",
     "utils/alloc",
     "sdk/python",
+    # Smart Contracts
+    "contracts/core",
+    "contracts/storage",
+    "contracts/vm",
+    "contracts/runtime",
 ]
 
 [workspace.package]
@@ -136,6 +141,12 @@ pyrin-wrpc-wasm = { version = "0.14.1", path = "rpc/wrpc/wasm" }
 pyrin-wrpc-example-subscriber = { version = "0.14.1", path = "rpc/wrpc/examples/subscriber" }
 pyrin = { version = "0.14.1", path = "pyrin" }
 pyrin-alloc = { version = "0.14.1", path = "utils/alloc" }
+
+# Smart Contracts
+pyrin-contracts-core = { version = "0.14.1", path = "contracts/core" }
+pyrin-contracts-storage = { version = "0.14.1", path = "contracts/storage" }
+pyrin-contracts-vm = { version = "0.14.1", path = "contracts/vm" }
+pyrin-contracts-runtime = { version = "0.14.1", path = "contracts/runtime" }
 
 # external
 aes = "0.8.3"
@@ -253,6 +264,7 @@ uuid = { version = "1.5.0", features = ["v4", "fast-rng", "serde"] }
 wasm-bindgen = { version = "0.2.92", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4.40"
 wasm-bindgen-test = "0.3.37"
+wasmi = "0.31"
 web-sys = "0.3.67"
 xxhash-rust = { version = "0.8.7", features = ["xxh3"] }
 zeroize = { version = "1.6.0", default-features = false, features = ["alloc"] }

@@ -5,6 +5,7 @@ pub mod address;
 pub mod broadcast;
 pub mod close;
 pub mod connect;
+pub mod contract;
 #[path = "create-unsigned-tx.rs"]
 pub mod create_unsigned_tx;
 pub mod details;
@@ -56,7 +57,7 @@ pub fn register_handlers(cli: &Arc<PyrinCli>) -> Result<()> {
         cli,
         cli.handlers(),
         [
-            account, address, close, connect, details, disconnect, estimate, exit, export, guide, help, history, rpc, list, miner,
+            account, address, close, connect, contract, details, disconnect, estimate, exit, export, guide, help, history, rpc, list, miner,
             message, monitor, mute, network, node, open, ping, reload, select, send, server, settings, sweep, track, transfer,
             wallet,
             // halt,
