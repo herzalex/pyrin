@@ -206,7 +206,7 @@ Storage access uses EIP-2929 style warm/cold tracking:
 
 ### 5.1 Build Status
 
-- All 56 contract tests pass
+- All 59 contract tests pass
 - No clippy warnings in contract crates
 - Clean compilation with `--release`
 
@@ -292,11 +292,11 @@ Existing `.gitignore` files cover:
 
 | Crate | Tests | Status |
 |-------|-------|--------|
-| pyrin-contracts-core | 18 | ✅ Pass |
+| pyrin-contracts-core | 21 | ✅ Pass |
 | pyrin-contracts-storage | 11 | ✅ Pass |
 | pyrin-contracts-vm | 17 | ✅ Pass |
 | pyrin-contracts-runtime | 10 | ✅ Pass |
-| **Total** | **56** | **✅ All Pass** |
+| **Total** | **59** | **✅ All Pass** |
 
 ### 8.3 Future Improvements
 
