@@ -78,10 +78,7 @@ impl ContractRuntime {
         }
     }
 
-    /// Creates a runtime with default config
-    pub fn default() -> Self {
-        Self::new(RuntimeConfig::default())
-    }
+
 
     /// Returns the configuration
     pub fn config(&self) -> &RuntimeConfig {
@@ -319,6 +316,12 @@ impl ContractRuntime {
     /// Gets the remaining block gas
     pub fn block_gas_remaining(&self) -> Gas {
         self.config.block_gas_limit.saturating_sub(*self.block_gas_used.read())
+    }
+}
+
+impl Default for ContractRuntime {
+    fn default() -> Self {
+        Self::new(RuntimeConfig::default())
     }
 }
 

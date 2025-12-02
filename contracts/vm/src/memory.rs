@@ -194,7 +194,7 @@ impl ContractMemory {
         }
 
         // Charge gas for copy
-        let words = (len + 31) / 32;
+        let words = len.div_ceil(32);
         let cost = (words as Gas) * self.gas.costs().copy_per_word;
         self.gas.consume(cost)?;
 

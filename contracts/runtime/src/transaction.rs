@@ -165,8 +165,8 @@ impl TransactionProcessor {
 
         match result {
             Ok(deploy_result) => {
-                // Calculate actual fee
-                let fee = tx.gas_price.saturating_mul(deploy_result.gas_used);
+                // Calculate actual fee (for future use in fee distribution)
+                let _fee = tx.gas_price.saturating_mul(deploy_result.gas_used);
                 
                 Ok(ContractReceipt::success(
                     tx.hash,

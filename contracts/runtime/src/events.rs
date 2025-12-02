@@ -61,6 +61,7 @@ impl ContractEvent {
 }
 
 /// Filter for querying events
+#[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct EventFilter {
     /// Start block (inclusive)
@@ -73,32 +74,33 @@ pub struct EventFilter {
     pub topics: Vec<Vec<LogTopic>>,
 }
 
+#[allow(dead_code)]
 impl EventFilter {
     /// Creates a new empty filter
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Sets the start block
-    pub fn from_block(mut self, block: u64) -> Self {
+    /// Sets the start block (builder pattern - consumes self)
+    pub fn with_from_block(mut self, block: u64) -> Self {
         self.from_block = Some(block);
         self
     }
 
-    /// Sets the end block
-    pub fn to_block(mut self, block: u64) -> Self {
+    /// Sets the end block (builder pattern - consumes self)
+    pub fn with_to_block(mut self, block: u64) -> Self {
         self.to_block = Some(block);
         self
     }
 
-    /// Adds an address to filter
-    pub fn address(mut self, address: ContractAddress) -> Self {
+    /// Adds an address to filter (builder pattern - consumes self)
+    pub fn with_address(mut self, address: ContractAddress) -> Self {
         self.addresses.push(address);
         self
     }
 
-    /// Adds a topic filter for a specific position
-    pub fn topic(mut self, position: usize, topic: LogTopic) -> Self {
+    /// Adds a topic filter for a specific position (builder pattern - consumes self)
+    pub fn with_topic(mut self, position: usize, topic: LogTopic) -> Self {
         while self.topics.len() <= position {
             self.topics.push(Vec::new());
         }
@@ -213,6 +215,7 @@ impl EventEmitter {
 }
 
 /// Simple in-memory event store
+#[allow(dead_code)]
 pub struct EventStore {
     /// Events indexed by block number
     by_block: HashMap<u64, Vec<ContractEvent>>,
@@ -220,6 +223,7 @@ pub struct EventStore {
     by_address: HashMap<ContractAddress, Vec<ContractEvent>>,
 }
 
+#[allow(dead_code)]
 impl EventStore {
     /// Creates a new event store
     pub fn new() -> Self {
@@ -318,19 +322,19 @@ mod tests {
         let event = create_test_event(100, ContractAddress::new([1u8; 20]));
         
         // Match block range
-        let filter = EventFilter::new().from_block(50).to_block(150);
+        let filter = EventFilter::new().with_from_block(50).with_to_block(150);
         assert!(filter.matches(&event));
         
         // Doesn't match block range
-        let filter = EventFilter::new().from_block(101);
+        let filter = EventFilter::new().with_from_block(101);
         assert!(!filter.matches(&event));
         
         // Match address
-        let filter = EventFilter::new().address(ContractAddress::new([1u8; 20]));
+        let filter = EventFilter::new().with_address(ContractAddress::new([1u8; 20]));
         assert!(filter.matches(&event));
         
         // Doesn't match address
-        let filter = EventFilter::new().address(ContractAddress::new([2u8; 20]));
+        let filter = EventFilter::new().with_address(ContractAddress::new([2u8; 20]));
         assert!(!filter.matches(&event));
     }
 
@@ -365,7 +369,7 @@ mod tests {
         assert_eq!(store.get_by_block(100).len(), 2);
         assert_eq!(store.get_by_address(&addr1).len(), 2);
         
-        let filter = EventFilter::new().from_block(100).to_block(100);
+        let filter = EventFilter::new().with_from_block(100).with_to_block(100);
         assert_eq!(store.query(&filter).len(), 2);
     }
 }

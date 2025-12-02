@@ -147,7 +147,7 @@ impl HostFunctions {
         use sha3::Digest;
 
         // Charge gas
-        let words = (data.len() + 31) / 32;
+        let words = data.len().div_ceil(32);
         let cost = self.gas.costs().sha3_base + 
                    (words as Gas) * self.gas.costs().sha3_per_word;
         self.gas.consume(cost)?;
